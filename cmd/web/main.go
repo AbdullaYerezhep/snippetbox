@@ -12,6 +12,11 @@ type Config struct {
 	StaticDir 	string
 }
 
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	cfg := new(Config)
 
@@ -20,25 +25,30 @@ func main() {
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	app := &application{
+		errorLog: errorLog,
+		infoLog: infoLog,
+	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet", app.showSnippet)
+	mux.HandleFunc("/snippet/create", app.createSnippet)
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	srv := &http.Server{
 		Addr: cfg.Addr,
-		ErrorLog: errLog,
+		ErrorLog: errorLog,
 		Handler: mux,
 	}
 
 	infoLog.Printf("Starting server at port %s!", cfg.Addr)
 
 	err := srv.ListenAndServe()
-		errLog.Fatal(err)
+		errorLog.Fatal(err)
 }
