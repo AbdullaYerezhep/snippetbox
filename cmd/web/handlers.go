@@ -24,6 +24,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	for _, snippet := range snippets {
 		fmt.Fprintf(w, "%v\n", snippet)
 	}
+	data := &templateData{Snippets: snippets}
 	files := []string {
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
@@ -35,7 +36,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 	}
 
-	if err = ts.Execute(w, snippets); err != nil {
+	if err = ts.Execute(w, data); err != nil {
 		app.serverError(w, err)
 	}
 }
@@ -53,8 +54,23 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	// http.Redirect(w, r, fmt.Sprintf("/sippet?id=%d", id), http.StatusSeeOther)
-	fmt.Fprintf(w, "%v", s)
+	data := &templateData{Snippet: s}
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	// Pass in the templateData struct when executing the template.
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
