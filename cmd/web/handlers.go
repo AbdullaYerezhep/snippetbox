@@ -3,7 +3,7 @@ package main
 import (
 	"Creata21/snippetbox/pkg/models"
 	"fmt"
-	// "html/template"
+	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -24,20 +24,20 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	for _, snippet := range snippets {
 		fmt.Fprintf(w, "%v\n", snippet)
 	}
-	// files := []string {
-	// 	"./ui/html/home.page.tmpl",
-	// 	"./ui/html/base.layout.tmpl",
-	// 	"./ui/html/footer.template.tmpl",
-	// }
+	files := []string {
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.template.tmpl",
+	}
 
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// }
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+	}
 
-	// if err = ts.Execute(w, nil); err != nil {
-	// 	app.serverError(w, err)
-	// }
+	if err = ts.Execute(w, snippets); err != nil {
+		app.serverError(w, err)
+	}
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
