@@ -1,77 +1,92 @@
 package main
 
 import (
-	"Creata21/snippetbox/pkg/models/mysql"
+	"Creata21/snippetbox/config"
+	"Creata21/snippetbox/pkg/models/postgres"
+	"context"
 	"database/sql"
 	"flag"
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 type Config struct {
-	Addr 		string
-	StaticDir 	string
+	Addr      string
+	StaticDir string
 }
 
 type application struct {
-	snippets *mysql.SnippetModel
+	snippets *postgres.SnippetModel
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	templateCache map[string]*template.Template
 }
-const (
-    username = "root"
-    password = "AYcreata21$"
-    host     = "172.17.0.4"
-    port     = "3306"
-    database = "snippetbox"
-)
 
 func main() {
-	cfg := new(Config)
-	
-	flag.StringVar(&cfg.Addr, "addr", ":8000", "HTTP network address")
+	cfg := config.GetConfig()
+
+	flag.StringVar(&cfg.Port, "addr", ":8080", "HTTP network address")
 	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
 	flag.Parse()
-	
+
+
+	log.Println("Configs are parsed")
+	log.Println(cfg.DSN)
+
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, host, port, database)
-	db, err  := openDB(dsn)
+
+	db, err := openDB(cfg.DSN)
+
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+
 	defer db.Close()
 
-	app := &application {
+	templateCache, err := newTemplateCache("./ui/html/")
+
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	app := &application{
 		errorLog: errorLog,
-		infoLog: infoLog,
-		snippets: &mysql.SnippetModel{DB: db},
+		infoLog:  infoLog,
+		snippets: &postgres.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
-	srv := &http.Server {
-		Addr: cfg.Addr,
+	srv := &http.Server{
+		Addr:     cfg.Port,
 		ErrorLog: errorLog,
-		Handler: app.routes(),
+		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server at port %s!", cfg.Addr)
+	infoLog.Printf("Starting server at port %s!", cfg.Port)
 
 	err = srv.ListenAndServe()
-		errorLog.Fatal(err)
+	errorLog.Fatal(err)
 }
 
-
 func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
-	if err = db.Ping(); err != nil {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
+	if err != nil {
 		return nil, err
 	}
+
 	return db, nil
 }
