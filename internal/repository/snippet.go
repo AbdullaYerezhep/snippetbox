@@ -1,33 +1,27 @@
-package postgres
+package repository
 
 import (
 	"Creata21/snippetbox/pkg/models"
 	"database/sql"
-	"fmt"
 )
 
-type SnippetModel struct {
-	DB *sql.DB
-}
-
-func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
-	query := `INSERT INTO snippets (title, content, created) VALUES ($1, $2, CURRENT_TIMESTAMP)`
+func (r repository) Insert(title, content string) (int, error) {
+	query := `INSERT INTO snippets (title, content, created) VALUES ($1, $2, CURRENT_TIMESTAMP) RETURNING id`
 
 	var id int
-	err := m.DB.QueryRow(query, title, content).Scan(&id)
+	err := r.DB.QueryRow(query, title, content).Scan(&id)
 
 	if err != nil {
 		return 0, err
 	}
 
-	fmt.Println(id)
 	return id, nil
 }
 
-func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
+func (r repository) Get(id int) (*models.Snippet, error) {
 	query := `SELECT id, title, content, created FROM snippets WHERE id = $1`
 
-	row := m.DB.QueryRow(query, id)
+	row := r.DB.QueryRow(query, id)
 	s := &models.Snippet{}
 
 	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created)
@@ -41,10 +35,10 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	return s, nil
 }
 
-func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
+func (r repository) Latest() ([]*models.Snippet, error) {
 	query := `SELECT * FROM snippets ORDER BY created DESC LIMIT 10`
 
-	rows, err := m.DB.Query(query)
+	rows, err := r.DB.Query(query)
 
 	if err != nil {
 		return nil, err

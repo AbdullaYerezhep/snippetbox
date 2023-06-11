@@ -2,7 +2,11 @@ package main
 
 import (
 	"Creata21/snippetbox/config"
+	"Creata21/snippetbox/internal/repository"
+	"Creata21/snippetbox/internal/service"
 	"Creata21/snippetbox/pkg/models/postgres"
+	"Creata21/snippetbox/pkg/postgres"
+	"Creata21/snippetbox/transport/server"
 	"context"
 	"database/sql"
 	"flag"
@@ -20,12 +24,20 @@ type Config struct {
 	StaticDir string
 }
 
-type application struct {
+type Application struct {
 	snippets *postgres.SnippetModel
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	templateCache map[string]*template.Template
 }
+
+app := &Application {
+	errorLog: errorLog,
+	infoLog:  infoLog,
+	snippets: &postgres.SnippetModel{DB: db},
+	templateCache: templateCache,
+}
+
 
 func main() {
 	cfg := config.GetConfig()
@@ -35,13 +47,14 @@ func main() {
 	flag.Parse()
 
 
-	log.Println("Configs are parsed")
-	log.Println(cfg.DSN)
-
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(cfg.DSN)
+	db, err := postgres.OpenDB(cfg.DSN)
+
+
+	repo := repository.New(db)
+	service := service.New(repo)
 
 	if err != nil {
 		errorLog.Fatal(err)
@@ -49,19 +62,13 @@ func main() {
 
 	defer db.Close()
 
-	templateCache, err := newTemplateCache("./ui/html/")
+	templateCache, err := server.NewTemplateCache("./ui/html/")
 
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
-	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &postgres.SnippetModel{DB: db},
-		templateCache: templateCache,
-	}
-
+	
 	srv := &http.Server{
 		Addr:     cfg.Port,
 		ErrorLog: errorLog,

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"Creata21/snippetbox/pkg/models"
@@ -23,7 +23,7 @@ var functions = template.FuncMap{
 	"humanDate" : humanDate,
 }
 
-func newTemplateCache(dir string) (map[string]*template.Template, error) {
+func NewTemplateCache(dir string) (map[string]*template.Template, error) {
 	log.Println(dir)
 	cache := map[string]*template.Template{}
 	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl"))
