@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type templateData struct {
+type TemplateData struct {
 	Snippet *models.Snippet
 	Snippets []*models.Snippet
 	CurrentYear int

@@ -1,7 +1,8 @@
-package main
+package handler
 
 import (
 	"Creata21/snippetbox/pkg/models"
+	"Creata21/snippetbox/transport/server"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,20 +10,20 @@ import (
 	"unicode/utf8"
 )
 
-func (app *Application) home(w http.ResponseWriter, r *http.Request)  {
+func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 
-	snippets, err := app.snippets.Latest()
+	snippets, err := h.service.Latest()
 	if err != nil {
-		app.serverError(w, err)
+		serverError(w, err)
 		return
 	}
-	data := &templateData{Snippets: snippets}
+	data := &server.TemplateData{Snippets: snippets}
 
-	app.render(w, r, "home.page.tmpl", data)
+	h.render(w, r, "home.page.tmpl", data)
 
 }
 
-func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
@@ -36,16 +37,16 @@ func (app *Application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	data := &templateData{Snippet: s}
+	data := &server.TemplateData{Snippet: s}
 
 	app.render(w, r, "show.page.tmpl", data)
 }
 
-func (app *Application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.tmpl", nil)
 }
 
-func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
@@ -59,7 +60,7 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 
 	if strings.TrimSpace(title) == "" {
 		errors["titile"] = "The title field cannot be empty"
-	}else if utf8.RuneCountInString(title) > 100 {
+	} else if utf8.RuneCountInString(title) > 100 {
 		errors["title"] = "This title field is too long (maximum is 100 characters)"
 	}
 
@@ -75,7 +76,7 @@ func (app *Application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := app.snippets.Insert(title, content)
 	fmt.Println(id)
 	if err != nil {
-		
+
 		app.serverError(w, err)
 	}
 

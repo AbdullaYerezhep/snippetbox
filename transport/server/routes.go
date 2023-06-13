@@ -2,15 +2,17 @@ package server
 
 import (
 	"net/http"
+	"Creata21/snippetbox/transport/middleware"
+	"Creata21/snippetbox/transport/handler"
 	"github.com/bmizerany/pat"
 	"github.com/justinas/alice"
 )
 
-func (app *Application) routes() http.Handler {
-	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, middleware.secureHeaders)
+func routes() http.Handler {
+	standardMiddleware := alice.New(middleware.recoverPanic, middleware.logRequest, middleware.secureHeaders)
 	mux := pat.New()
 
-	mux.Get("/", http.HandlerFunc(app.home))
+	mux.Get("/", http.HandlerFunc(handler.Home))
 
 	mux.Get("/snippet/create", http.HandlerFunc(app.createSnippetForm))
 	mux.Post("/snippet/create", http.HandlerFunc(app.createSnippet))
