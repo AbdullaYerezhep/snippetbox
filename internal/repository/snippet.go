@@ -18,7 +18,7 @@ func (r repository) Insert(title, content string) (int, error) {
 	return id, nil
 }
 
-func (r repository) Get(id int) (*models.Snippet, error) {
+func (r repository) Get(id int64) (*models.Snippet, error) {
 	query := `SELECT id, title, content, created FROM snippets WHERE id = $1`
 
 	row := r.DB.QueryRow(query, id)

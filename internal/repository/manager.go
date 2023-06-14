@@ -8,7 +8,7 @@ import (
 
 type IDb interface {
 	Insert(title, content string) (int, error)
-	Get(id int) (*models.Snippet, error)
+	Get(id int64) (*models.Snippet, error)
 	Latest() ([]*models.Snippet, error)
 }
 

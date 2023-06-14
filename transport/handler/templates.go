@@ -1,14 +1,13 @@
-package server
+package handler
 
 import (
 	"Creata21/snippetbox/pkg/models"
 	"html/template"
-	"log"
 	"path/filepath"
 	"time"
 )
 
-type TemplateData struct {
+type templateData struct {
 	Snippet *models.Snippet
 	Snippets []*models.Snippet
 	CurrentYear int
@@ -24,7 +23,6 @@ var functions = template.FuncMap{
 }
 
 func NewTemplateCache(dir string) (map[string]*template.Template, error) {
-	log.Println(dir)
 	cache := map[string]*template.Template{}
 	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl"))
 

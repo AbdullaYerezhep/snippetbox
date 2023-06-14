@@ -8,39 +8,39 @@ import (
 	"time"
 )
 
-func (h Handler) serverError(w http.ResponseWriter, err error) {
-	trace := fmt.Sprintf("%s\n%s",err.Error(), debug.Stack())
-	h.log.errorLog.Output(2, trace)
-	
-	http.Error(w, http.StatusText(http.StatusInternalServerError),http.StatusInternalServerError)
+func (h *Handler) serverError(w http.ResponseWriter, err error) {
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	h.log.ErrorLog.Output(2, trace)
+
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func  clientError(w http.ResponseWriter, status int) {
+func (h *Handler) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-func  notFound(w http.ResponseWriter) {
-	clientError(w, http.StatusNotFound)
+func (h *Handler) notFound(w http.ResponseWriter) {
+	h.clientError(w, http.StatusNotFound)
 }
 
-func  render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
-	ts, ok := app.templateCache[name]
+func (h *Handler) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	ts, ok := h.tmpl[name]
 
 	if !ok {
-		app.serverError(w, fmt.Errorf("the template %s does not exists", name))
+		h.serverError(w, fmt.Errorf("the template %s does not exists", name))
 	}
 
 	buf := new(bytes.Buffer)
-	err := ts.Execute(buf, app.addDefaultData(td, r))
+	err := ts.Execute(buf, h.addDefaultData(td, r))
 
 	if err != nil {
-		app.serverError(w, err)
+		h.serverError(w, err)
 	}
 
 	buf.WriteTo(w)
 }
 
-func (app *Application) addDefaultData(td *templateData, r *http.Request) *templateData {
+func (h *Handler) addDefaultData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}

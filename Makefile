@@ -1,5 +1,4 @@
-PROJECT_NAME := bank-account
-
+PROJECT_NAME := snippetbox
 .PHONY: help
 help: ## Show this help.
 	@echo "Choose a command run in "$(PROJECT_NAME)":"
@@ -28,7 +27,7 @@ db/rollback:
 
 .PHONY: run
 run:
-	go run main.go
+	go run cmd/main.go
 
 .PHONY: test
 test:

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func secureHeaders(next http.Handler) http.Handler {
+func SecureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
 		w.Header().Set("X-Frame-Options", "deny")
@@ -12,14 +12,14 @@ func secureHeaders(next http.Handler) http.Handler {
 	})
 }
 
-func logRequest(next http.Handler) http.Handler {
+func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// app.infoLog.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func recoverPanic(next http.Handler) http.Handler {
+func RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 		defer func ()  {
 			if err := recover(); err != nil {

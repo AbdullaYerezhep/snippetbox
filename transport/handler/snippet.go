@@ -2,7 +2,6 @@ package handler
 
 import (
 	"Creata21/snippetbox/pkg/models"
-	"Creata21/snippetbox/transport/server"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,14 +9,14 @@ import (
 	"unicode/utf8"
 )
 
-func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 
 	snippets, err := h.service.Latest()
 	if err != nil {
-		serverError(w, err)
+		h.serverError(w, err)
 		return
 	}
-	data := &server.TemplateData{Snippets: snippets}
+	data := &templateData{Snippets: snippets}
 
 	h.render(w, r, "home.page.tmpl", data)
 
@@ -27,29 +26,29 @@ func (h *Handler) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		h.notFound(w)
 		return
 	}
-	s, err := app.snippets.Get(id)
+	s, err := h.service.Get(int64(id))
 	if err == models.ErrNoRecord {
-		app.notFound(w)
+		h.notFound(w)
 	} else if err != nil {
-		app.serverError(w, err)
+		h.serverError(w, err)
 		return
 	}
-	data := &server.TemplateData{Snippet: s}
+	data := &templateData{Snippet: s}
 
-	app.render(w, r, "show.page.tmpl", data)
+	h.render(w, r, "show.page.tmpl", data)
 }
 
-func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+func (h *Handler) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+	h.render(w, r, "create.page.tmpl", nil)
 }
 
-func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) createSnippet(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		h.clientError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -73,11 +72,11 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content)
+	id, err := h.service.Insert(title, content)
 	fmt.Println(id)
 	if err != nil {
 
-		app.serverError(w, err)
+		h.serverError(w, err)
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)

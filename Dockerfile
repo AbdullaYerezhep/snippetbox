@@ -7,7 +7,7 @@ COPY . .
 
 RUN go get -d -v ./...
 
-RUN go build -o main ./cmd/web/*
+RUN go build -o main ./
 
 EXPOSE 8080
 
