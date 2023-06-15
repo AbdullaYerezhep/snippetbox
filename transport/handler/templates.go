@@ -3,6 +3,7 @@ package handler
 import (
 	"Creata21/snippetbox/pkg/models"
 	"html/template"
+	"net/url"
 	"path/filepath"
 	"time"
 )
@@ -10,6 +11,8 @@ import (
 type templateData struct {
 	Snippet *models.Snippet
 	Snippets []*models.Snippet
+	FormData url.Values
+	FormErrors map[string]string
 	CurrentYear int
 }
 

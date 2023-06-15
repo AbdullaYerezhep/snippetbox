@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
+	
 )
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
@@ -52,31 +51,19 @@ func (h *Handler) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errors := make(map[string]string)
+	// errors := make(map[string]string)
 
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 
-	if strings.TrimSpace(title) == "" {
-		errors["titile"] = "The title field cannot be empty"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errors["title"] = "This title field is too long (maximum is 100 characters)"
-	}
-
-	if strings.TrimSpace(content) == "" {
-		errors["content"] = "The title content cannot be empty"
-	}
+	id, errors := h.service.Insert(title, content)
 
 	if len(errors) > 0 {
-		fmt.Fprint(w, errors)
+		h.render(w, r, "create.page.tmpl", &templateData{
+			FormErrors:errors,
+			FormData: r.PostForm,
+		})
 		return
-	}
-
-	id, err := h.service.Insert(title, content)
-	fmt.Println(id)
-	if err != nil {
-
-		h.serverError(w, err)
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)

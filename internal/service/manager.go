@@ -7,7 +7,7 @@ import (
 )
 
 type IService interface {
-	Insert(title, content string) (int, error)
+	Insert(title, content string) (int, map[string]string)
 	Get(id int64) (*models.Snippet, error)
 	Latest() ([]*models.Snippet, error)
 }
