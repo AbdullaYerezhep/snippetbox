@@ -1,11 +1,11 @@
 package handler
 
 import (
+	"Creata21/snippetbox/pkg/forms"
 	"Creata21/snippetbox/pkg/models"
 	"fmt"
 	"net/http"
 	"strconv"
-	
 )
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
@@ -24,24 +24,29 @@ func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+
 	if err != nil || id < 1 {
 		h.notFound(w)
 		return
 	}
+
 	s, err := h.service.Get(int64(id))
+
 	if err == models.ErrNoRecord {
 		h.notFound(w)
 	} else if err != nil {
 		h.serverError(w, err)
 		return
 	}
-	data := &templateData{Snippet: s}
 
+	data := &templateData{Snippet: s}
 	h.render(w, r, "show.page.tmpl", data)
 }
 
 func (h *Handler) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "create.page.tmpl", nil)
+	h.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (h *Handler) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -51,20 +56,25 @@ func (h *Handler) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// errors := make(map[string]string)
+	form := forms.New(r.PostForm)
+	form.Required("title", "content")
+	form.MaxLength("title", 100)
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-
-	id, errors := h.service.Insert(title, content)
-
-	if len(errors) > 0 {
+	if !form.Valid() {
 		h.render(w, r, "create.page.tmpl", &templateData{
-			FormErrors:errors,
-			FormData: r.PostForm,
+			Form: form,
 		})
 		return
 	}
+
+	id, err := h.service.Insert(form.Get("title"), form.Get("content"))
+
+	if err != nil{
+		h.serverError(w, err)
+		return
+	}
+
+	h.sessions.Put(r, "flash", "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }

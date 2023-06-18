@@ -45,5 +45,6 @@ func (h *Handler) addDefaultData(td *templateData, r *http.Request) *templateDat
 		td = &templateData{}
 	}
 	td.CurrentYear = time.Now().Year()
+	td.Flash = h.sessions.PopString(r, "flash")
 	return td
 }

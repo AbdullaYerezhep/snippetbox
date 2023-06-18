@@ -1,27 +1,25 @@
 {{template "base" .}}
     {{define "title"}}Create a New Snippet{{end}}
     {{define "body"}}
-        {{if .FormErrors.database}}
-            <h1>{{.}}</h1>
-        {{else}}
-            <form action='/snippet/create' method='POST'>
-            <div>
-                <label>Title:</label>
-                {{with .FormErrors.title}}
-                    <label class="error">{{.}}</label>
-                {{end}}
-                <input type='text' name='title' value='{{.FormData.Get "title"}}'>
-            </div>
-            <div>
-                <label>Content:</label>
-                {{with .FormErrors.content}}
-                    <label class="error">{{.}}</label>
-                {{end}}
-                <textarea name='content'>{{.FormData.Get "content"}}</textarea>
-            </div>
-            <div>
-                <input type='submit' value='Publish snippet'>
-            </div>
-            </form>
+        <form action='/snippet/create' method='POST'>
+        {{with .Form}}
+        <div>
+            <label>Title:</label>
+            {{with .Errors.Get "title"}}
+                <label class="error">{{.}}</label>
+            {{end}}
+            <input type='text' name='title' value='{{.Get "title"}}'>
+        </div>
+        <div>
+            <label>Content:</label>
+            {{with .Errors.Get "content"}}
+                <label class="error">{{.}}</label>
+            {{end}}
+            <textarea name='content'>{{.Get "content"}}</textarea>
+        </div>
+        <div>
+            <input type='submit' value='Publish snippet'>
+        </div>
         {{end}}
+        </form>
     {{end}}

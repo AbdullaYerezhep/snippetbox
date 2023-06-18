@@ -8,6 +8,9 @@ import (
 	"Creata21/snippetbox/pkg/postgres"
 	handler "Creata21/snippetbox/transport/handler"
 	"net/http"
+	"time"
+
+	"github.com/golangcollege/sessions"
 )
 
 func Run(cfg *config.Config, logger logger.Logger) error {
@@ -30,14 +33,22 @@ func Run(cfg *config.Config, logger logger.Logger) error {
 		logger.ErrorLog.Fatal("Could not cache template!")
 	}
 
-	handle := handler.New(service, logger, template)
+	session := sessions.New([]byte(cfg.SecretSession))
+	session.Lifetime = 12 * time.Hour
+
+	handle := handler.New(service, logger, template, session)
+	
 	srv := &http.Server{
 		Addr:     cfg.Port,
 		ErrorLog: logger.ErrorLog,
-		Handler:  handler.Routes(handle),
+		Handler:  handler.Routes(*handle),
 	}
 
-	srv.ListenAndServe()
+	logger.InfoLog.Printf("Server is running on port %s", srv.Addr)
 
+	err = srv.ListenAndServe()
+
+	logger.ErrorLog.Fatalln(err)
+	
 	return nil
 }

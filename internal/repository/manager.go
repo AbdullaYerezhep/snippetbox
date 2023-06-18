@@ -18,5 +18,5 @@ type repository struct {
 }
 
 func New(db *sql.DB, l logger.Logger) IDb {
-	return repository{DB: db, log: l}
+	return &repository{DB: db, log: l}
 }

@@ -9,15 +9,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Config struct {
-	Addr      string
-	StaticDir string
-}
 
 func main() {
 	cfg := config.GetConfig()
 	flag.StringVar(&cfg.Port, "addr", ":8080", "HTTP network address")
 	flag.StringVar(&cfg.StaticDir, "static-dir", "./ui/static", "Path to static assets")
+	flag.StringVar(&cfg.SecretSession, "secret-session", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret session key")
 	flag.Parse()
 
 	log := logger.New()

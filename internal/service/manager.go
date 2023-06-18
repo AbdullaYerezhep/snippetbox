@@ -7,7 +7,7 @@ import (
 )
 
 type IService interface {
-	Insert(title, content string) (int, map[string]string)
+	Insert(title, content string) (int, error)
 	Get(id int64) (*models.Snippet, error)
 	Latest() ([]*models.Snippet, error)
 }
@@ -18,5 +18,5 @@ type service struct {
 }
 
 func New(r repository.IDb, l logger.Logger) IService {
-	return service{repository: r, log: l}
+	return &service{repository: r, log: l}
 }

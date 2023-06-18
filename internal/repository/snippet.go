@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-func (r repository) Insert(title, content string) (int, error) {
+func (r *repository) Insert(title, content string) (int, error) {
 	query := `INSERT INTO snippets (title, content, created) VALUES ($1, $2, CURRENT_TIMESTAMP) RETURNING id`
 
 	var id int
@@ -18,7 +18,7 @@ func (r repository) Insert(title, content string) (int, error) {
 	return id, nil
 }
 
-func (r repository) Get(id int64) (*models.Snippet, error) {
+func (r *repository) Get(id int64) (*models.Snippet, error) {
 	query := `SELECT id, title, content, created FROM snippets WHERE id = $1`
 
 	row := r.DB.QueryRow(query, id)
@@ -35,7 +35,7 @@ func (r repository) Get(id int64) (*models.Snippet, error) {
 	return s, nil
 }
 
-func (r repository) Latest() ([]*models.Snippet, error) {
+func (r *repository) Latest() ([]*models.Snippet, error) {
 	query := `SELECT * FROM snippets ORDER BY created DESC LIMIT 10`
 
 	rows, err := r.DB.Query(query)

@@ -13,6 +13,7 @@ type Config struct {
 	Port string `json:"port"`
 	DSN  string `json:"dsn"`
 	StaticDir string `json:"static_dir"`
+	SecretSession string `json:"secret_session"`
 }
 
 var (
