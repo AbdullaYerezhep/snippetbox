@@ -4,3 +4,13 @@ CREATE TABLE IF NOT EXISTS snippets (
   content TEXT,
   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  hashed_password CHAR(60) NOT NULL,
+  created TIMESTAMP NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT users_uc_email UNIQUE (email)
+);

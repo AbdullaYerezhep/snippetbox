@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) home(w http.ResponseWriter, r *http.Request) {
 
-	snippets, err := h.service.Latest()
+	snippets, err := h.service.SnippetService.Latest()
 	if err != nil {
 		h.serverError(w, err)
 		return
@@ -30,7 +30,7 @@ func (h *Handler) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := h.service.Get(int64(id))
+	s, err := h.service.SnippetService.Get(int64(id))
 
 	if err == models.ErrNoRecord {
 		h.notFound(w)
@@ -38,8 +38,9 @@ func (h *Handler) showSnippet(w http.ResponseWriter, r *http.Request) {
 		h.serverError(w, err)
 		return
 	}
-
-	data := &templateData{Snippet: s}
+	data := &templateData{
+		Snippet: s,
+	}
 	h.render(w, r, "show.page.tmpl", data)
 }
 
@@ -67,7 +68,7 @@ func (h *Handler) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.service.Insert(form.Get("title"), form.Get("content"))
+	id, err := h.service.SnippetService.Insert(form.Get("title"), form.Get("content"))
 
 	if err != nil{
 		h.serverError(w, err)

@@ -42,6 +42,9 @@ func Run(cfg *config.Config, logger logger.Logger) error {
 		Addr:     cfg.Port,
 		ErrorLog: logger.ErrorLog,
 		Handler:  handler.Routes(*handle),
+		IdleTimeout: time.Minute,
+		ReadTimeout: 5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	logger.InfoLog.Printf("Server is running on port %s", srv.Addr)

@@ -9,12 +9,12 @@ import (
 )
 
 type Handler struct {
-	service  service.IService
+	service  service.Service
 	log      logger.Logger
 	tmpl 	  map[string]*template.Template
 	sessions  sessions.Session
 }
 
-func New(svc service.IService, l logger.Logger, template map[string]*template.Template, session *sessions.Session) *Handler {
+func New(svc service.Service, l logger.Logger, template map[string]*template.Template, session *sessions.Session) *Handler {
 	return &Handler{service: svc, log: l, tmpl: template, sessions: *session}
 }
